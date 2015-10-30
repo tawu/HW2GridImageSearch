@@ -1,16 +1,19 @@
-package com.codepath.gridimagesearch;
+package com.codepath.gridimagesearch.models;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Created by tawu on 10/27/15.
  */
-public class ImageResult
+public class ImageResult implements Serializable
 {
+    //private static final long serialVersionUID =
+
     public String fullUrl;
     public String thumbUrl;
     public String title;
