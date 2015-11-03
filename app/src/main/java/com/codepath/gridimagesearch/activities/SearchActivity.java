@@ -123,7 +123,7 @@ public class SearchActivity extends ActionBarActivity {
                             //{"responseData" => "results" => [x: array] => attribute}
                             imageResultsJSON = response.getJSONObject("responseData").getJSONArray("results");
                             //clear existing images from the array in cases where its a new search
-                            imageResults.clear();
+                            //imageResults.clear();
                             /*
                             //Standard steps:
                             //add images to imageResults array
@@ -159,7 +159,47 @@ public class SearchActivity extends ActionBarActivity {
 
 
         //get images
-        customLoadMoreDataFromApi(0);
+
+        //generate query string for URL
+        String queryUrl = String.format(googleImageSearchURLFormat, query, maxSearchReturnItems, 0);
+        //setup HTTP client
+        AsyncHttpClient client = new AsyncHttpClient();
+        //GET query
+        client.get(queryUrl, new JsonHttpResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                        //log info in debug view
+                        //Log.d("DEBUG", response.toString());
+
+                        //iterate each of the photo items and decode the item into a java object
+                        JSONArray imageResultsJSON = null;
+                        try {
+                            //{"responseData" => "results" => [x: array] => attribute}
+                            imageResultsJSON = response.getJSONObject("responseData").getJSONArray("results");
+                            //clear existing images from the array in cases where its a new search
+                            imageResults.clear();
+                            /*
+                            //Standard steps:
+                            //add images to imageResults array
+                            //imageResults.addAll(ImageResult.fromJSONArray(imageResultsJSON));
+                            //Now we can refresh ImageResultsAdapter
+                            aImageResults.notifyDataSetChanged();
+                            */
+
+                            //alternative way:
+                            // since adapter is an Array, it has similar method too,
+                            // and this automatically triggers the notify
+                            aImageResults.addAll(ImageResult.fromJSONArray(imageResultsJSON));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                        //check result
+                        //Log.i("INFO", imageResults.toString());
+                    }
+                }
+        );
+
     }
 
     @Override
