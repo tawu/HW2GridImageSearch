@@ -10,7 +10,9 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.Toast;
 
+import com.codepath.gridimagesearch.adapters.EndlessScrollListener;
 import com.codepath.gridimagesearch.adapters.ImageResultsAdapter;
 import com.codepath.gridimagesearch.models.ImageResult;
 import com.codepath.gridimagesearch.R;
@@ -34,7 +36,7 @@ public class SearchActivity extends ActionBarActivity {
     private ArrayList<ImageResult> imageResults;
     private ImageResultsAdapter aImageResults;
 
-    private String googleImageSearchURLFormat = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=%s&rsz=%d";
+    private String googleImageSearchURLFormat = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=%s&rsz=%d&start=%d";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +62,17 @@ public class SearchActivity extends ActionBarActivity {
         //Link the adapter to the adapterview (gridview)
         gvResults.setAdapter(aImageResults);
 
+        gvResults.setOnScrollListener(new EndlessScrollListener() {
+            @Override
+            public boolean onLoadMore(int page, int totalItemsCount) {
+                // Triggered only when new data needs to be appended to the list
+                // Add whatever code is needed to append new items to your AdapterView
+                customLoadMoreDataFromApi(page * maxSearchReturnItems);
+                // or customLoadMoreDataFromApi(totalItemsCount);
+                return true; // ONLY if more data is actually being loaded; false otherwise.
+            }
+        });
+
     }
 
     private void setupViews()
@@ -68,11 +81,9 @@ public class SearchActivity extends ActionBarActivity {
         gvResults = (GridView)findViewById(R.id.gvResults);
 
         //launch second window when click the image
-        gvResults.setOnItemClickListener(new AdapterView.OnItemClickListener()
-        {
+        gvResults.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-            {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 //launch the image display activity, launch a second window and pass data to second window
                 //create an intent
                 Intent i = new Intent(SearchActivity.this, ImageDisplayActivity.class);
@@ -87,35 +98,28 @@ public class SearchActivity extends ActionBarActivity {
                 startActivity(i);
             }
         });
+
     }
 
-    //button btnSearch onClick event handler
-    public void onImageSearch(View v)
+
+    public void customLoadMoreDataFromApi(int offset)
     {
-        //find the query string in etQuery view
         String query = etQuery.getText().toString();
 
-        //use Toast to temporary show the content of query for debug purpose
-        //Toast.makeText(this, query, Toast.LENGTH_SHORT).show();
-
-
         //generate query string for URL
-        String queryUrl = String.format(googleImageSearchURLFormat, query, maxSearchReturnItems);
+        String queryUrl = String.format(googleImageSearchURLFormat, query, maxSearchReturnItems, offset);
         //setup HTTP client
         AsyncHttpClient client = new AsyncHttpClient();
         //GET query
-        client.get(queryUrl, new JsonHttpResponseHandler()
-                {
+        client.get(queryUrl, new JsonHttpResponseHandler() {
                     @Override
-                    public void onSuccess(int statusCode, Header[] headers, JSONObject response)
-                    {
+                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                         //log info in debug view
                         //Log.d("DEBUG", response.toString());
 
                         //iterate each of the photo items and decode the item into a java object
                         JSONArray imageResultsJSON = null;
-                        try
-                        {
+                        try {
                             //{"responseData" => "results" => [x: array] => attribute}
                             imageResultsJSON = response.getJSONObject("responseData").getJSONArray("results");
                             //clear existing images from the array in cases where its a new search
@@ -132,9 +136,7 @@ public class SearchActivity extends ActionBarActivity {
                             // since adapter is an Array, it has similar method too,
                             // and this automatically triggers the notify
                             aImageResults.addAll(ImageResult.fromJSONArray(imageResultsJSON));
-                        }
-                        catch (JSONException e)
-                        {
+                        } catch (JSONException e) {
                             e.printStackTrace();
                         }
 
@@ -144,7 +146,20 @@ public class SearchActivity extends ActionBarActivity {
                 }
         );
 
+    }
 
+    //button btnSearch onClick event handler
+    public void onImageSearch(View v)
+    {
+        //find the query string in etQuery view
+        String query = etQuery.getText().toString();
+
+        //use Toast to temporary show the content of query for debug purpose
+        //Toast.makeText(this, query, Toast.LENGTH_SHORT).show();
+
+
+        //get images
+        customLoadMoreDataFromApi(0);
     }
 
     @Override

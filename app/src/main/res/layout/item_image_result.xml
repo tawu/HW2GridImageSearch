@@ -8,7 +8,7 @@
         android:layout_width="75dp"
         android:layout_height="75dp"
         android:id="@+id/ivImage"
-        android:scaleType="fitXY"
+        android:scaleType="center"
         android:adjustViewBounds="true"
         android:focusable="false"
         android:contentDescription="@string/image_description" />
@@ -20,5 +20,6 @@
         android:id="@+id/tvTitle"
         android:layout_weight="0.04"
         android:maxLines="2"
-        android:ellipsize="end" />
+        android:ellipsize="end"
+        android:gravity="center" />
 </LinearLayout>

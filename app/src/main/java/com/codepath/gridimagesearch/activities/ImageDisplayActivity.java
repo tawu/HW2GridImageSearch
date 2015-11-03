@@ -19,6 +19,7 @@ public class ImageDisplayActivity extends ActionBarActivity {
 
         //Remove or hide the actionbar on the image display activity
         //getActionBar().hide();
+        getSupportActionBar().setDisplayShowHomeEnabled(false);
 
         //pull out the url from the intent
         //String url = getIntent().getStringExtra("url");
